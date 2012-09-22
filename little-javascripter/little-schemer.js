@@ -94,7 +94,11 @@ function cdr(s) {
 }
 
 function cons(a, d) {
-  return [a, d];
+  //return [a, d];
+  //Crockford's version is the line above
+  var x = d;
+  x.unshift(a);
+  return x;
 }
 
 function isAtom(a) {
@@ -125,6 +129,7 @@ function isNumber(a) {
 
 function isNull(a) {
   //return typeof a === 'undefined' || (typeof a === 'object' && !a);
+  //Crockford's version is the line above
   return typeof a === 'undefined' || typeof a[0] === 'undefined';
 }
 
@@ -158,3 +163,106 @@ var isMember = function(a, lat) {
 };
 
 // Chapter 3
+var rember = function(a, lat) {
+  if (isNull(lat)) {
+    return [];
+  } else if (isEq(a, car(lat))) { 
+    return cdr(lat) 
+  } else {
+      return cons(car(lat), rember(a, cdr(lat)))
+  }
+};
+
+var firsts = function(l) {
+  return isNull(l) ? [] : cons(car(car(l)), firsts(cdr(l)));
+};
+/*print(firsts([["apple", "peach", "pumpkin"],
+              ["plum", "pear", "cherry"],
+              ["grape", "raisin", "pea"],
+              ["bean", "carrot", "eggplant"]]));
+
+print(firsts([[["five", "plums"],
+              ["four"]],
+              ["eleven", "green", "oranges"],
+              [["no"], "more"]]));
+In my own words: firsts returns the first element of each list it is given.
+ * Their words were a bit more precise...
+*/
+
+/*
+ * In my own words: insertR takes three values, a new value, 
+ * an old value and a list. It searches for the old value in 
+ * the list, and inserts the new value to the right of the old. */
+var insertR = function(n, o, l) {
+  if (isNull(l)) {
+    return [];
+  } else if (isEq(o, car(l))) {
+    return cons(o, cons(n, cdr(l))); //Add new on the rest of the list, then add old back
+  } else {
+    return cons(car(l), insertR(n, o, cdr(l)));
+  }
+};
+
+var insertL = function(n, o, l) {
+  if (isNull(l)) {
+    return [];
+  } else if (isEq(o, car(l))) {
+    return cons(n, cons(o, cdr(l))); 
+  } else {
+    return cons(car(l), insertL(n, o, cdr(l)));
+  }
+};
+
+var subst = function(n, o, l) {
+  if (isNull(l)) {
+    return [];
+  } else if (isEq(o, car(l))) {
+    return cons(n, cdr(l)); 
+  } else {
+    return cons(car(l), subst(n, o, cdr(l)));
+  }
+};
+
+var multirember = function(a, l) {
+  if(isNull(l)) {
+    return [];
+  } else if(isEq(car(l), a)) {
+    return multirember(a, cdr(l));
+  } else {
+    return cons(car(l), multirember(a, cdr(l)));
+  }
+};
+
+var multiinsertR = function(n, o, l) {
+  if(isNull(l)) {
+    return [];
+  } else if(isEq(car(l), o)) {
+    return cons(car(l), cons(n,
+              multiinsertR(n, o, cdr(l))));
+  } else {
+    return cons(car(l), multiinsertR(n, o, cdr(l)));
+  }
+};
+
+var multiinsertL = function(n, o, l) {
+  if(isNull(l)) {
+    return [];
+  } else if(isEq(car(l), o)) {
+    return cons(n, cons(car(l),
+              multiinsertL(n, o, cdr(l))));
+  } else {
+    return cons(car(l), multiinsertL(n, o, cdr(l)));
+  }
+};
+
+var multisubst = function(n, o, l) {
+  if(isNull(l)) {
+    return [];
+  } else if(isEq(car(l), o)) {
+    return cons(n, multisubst(n, o, cdr(l)));
+  } else {
+    return cons(car(l), multisubst(n, o, cdr(l)));
+  }
+};
+
+
