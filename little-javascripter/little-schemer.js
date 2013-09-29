@@ -265,4 +265,222 @@ var multisubst = function(n, o, l) {
   }
 };
 
+//Chapter 4
 
+var isTup = function(tup) {
+  return isNull(tup) || (isNumber(car(tup)) && isTup(cdr(tup)));
+};
+
+var addTup = function(tup) {
+  return isNull(tup) ? 0 : car(tup) + addTup(cdr(tup));
+}
+
+//Adds two tups of the same length
+//Probably made this code too dense...
+/*
+var tupAdd = function(tup1, tup2) {
+  return (isNull(tup1) && isNull(tup2)) ? [] : cons((car(tup1) + car(tup2)), tupAdd(cdr(tup1), cdr(tup2)));
+}
+*/
+
+//Better version that takes two tups of any length
+var tupAdd = function(tup1, tup2) {
+  if(isNull(tup1) && isNull(tup2)) {
+    return [];
+  } else if(isNull(tup1)) {
+    return tup2;
+  } else if(isNull(tup2)) {
+    return tup1;
+  } else {
+    return cons((car(tup1) + car(tup2)), tupAdd(cdr(tup1), cdr(tup2)));
+  }
+}
+
+var length = function(lat) {
+  return isNull(lat) ? 0 : 1 + length(cdr(lat));
+}
+
+//Don't think this is quite right..
+var pick = function(n, lat) {
+  if(n-1 == 0) {
+    return car(lat);
+  } else {
+    return pick(n-1, cdr(lat));
+  }
+}
+
+var no_nums = function(lat) {
+  if(isNull(lat)) {
+    return  [];
+  } else if(isNumber(car(lat))) { 
+    return no_nums(cdr(lat));
+  } else {
+    return cons(car(lat), no_nums(cdr(lat)));
+  }
+}
+
+var all_nums = function(lat) {
+  if(isNull(lat)) {
+    return  [];
+  } else if(isNumber(car(lat))) { 
+    return cons(car(lat), all_nums(cdr(lat)));
+  } else {
+    return all_nums(cdr(lat));
+  }
+}
+
+var occur = function(a, lat) {
+  if(isNull(lat)) {
+    return 0;
+  } else if(isEq(car(lat), a)) {
+    return 1 + occur(a, cdr(lat));
+  } else {
+    return occur(a, cdr(lat));
+  }
+}
+
+//Chapter 5
+
+//DOES NOT WORK
+var remberstar = function(a, l) {
+  if(isNull(l)) {
+    return [];
+  } 
+  if(isAtom(car(l))) {
+    if(isEq(car(l), a)) {
+      remberstar(a, cdr(l));
+    } else {
+      cons(car(l), remberstar(a, cdr(l)));
+    }
+  } else {
+    cons(remberstar(a, car(l)), remberstar(a, cdr(l)));
+  }
+}
+print(remberstar("cup", [["coffee"], "cup", [["tea"], "cup"], ["and", ["hick"]], "cup"]));
+
+function insertRStar(n, old, l) {
+
+}
+
+//Chapter 7
+
+var isSet = function(lat) {
+  if(isNull(lat)) {
+    return true;  
+  } else if(isMember(car(lat), cdr(lat))) {
+    return false;
+  } else {
+    return isSet(cdr(lat));
+  }
+}
+
+var makeset = function(lat) {
+  /*
+  if(isNull(lat)) {
+    return [];
+  } else if(isMember(car(lat), cdr(lat))) {
+    return makeset(cdr(lat));
+  } else {
+    return cons(car(lat), makeset(cdr(lat)));
+  }
+  */
+  return isNull(lat) ? [] : cons(car(lat), makeset(multirember(car(lat), cdr(lat))));
+}
+
+var isSubset = function(s1, s2) {
+  /*
+  if(isNull(s1)) {
+    return true;
+  } else if(isMember(car(s1), s2)) {
+    return isSubset(cdr(s1), s2);
+  } else {
+    return false;
+  }
+  */
+  return isNull(s1) ? true : isMember(car(s1), s2) && isSubset(cdr(s1), s2);
+  return false;
+}
+
+var isEqSet = function(s1, s2) {
+  return isSubset(s1, s2) && isSubset(s2, s1);
+}
+
+var isIntersect = function(s1, s2) {
+  /*
+  if(isNull(s1)) {
+    return false;
+  } else if(isMember(car(s1), s2)) {
+    return true;
+  } else {
+    return isIntersect(cdr(s1), s2);
+  }
+  */
+  return isNull(s1) ? false : isMember(car(s1), s2) || isIntersect(cdr(s1), s2);
+}
+
+var intersect = function(s1, s2) {
+  if(isNull(s1)) {
+    return [];
+  } else if(isMember(car(s1), s2)) {
+    return cons(car(s1), intersect(cdr(s1), s2));
+  } else {
+    return intersect(cdr(s1), s2);
+  }
+}
+
+var union = function(s1, s2) {
+  if(isNull(s1)) {
+    return s2;
+  } else if(isMember(car(s1), s2)) {
+    return union(cdr(s1), s2);
+  } else {
+    return cons(car(s1), union(cdr(s1), s2));
+  }
+}
+
+var intersectall = function(lset) {
+  if(isNull(cdr(lset))) {
+    return car(lset);
+  } else {
+    return intersect(car(lset), intersectall(cdr(lset)));
+  }
+}
+
+var isPair = function(x) {
+  /*
+  if(isAtom(x) || isNull(x) || isNull(cdr(x))) {
+    return false;
+  } else if(isNull(cdr(cdr(x)))) {
+    return true;
+  } else {
+    return false;
+  }
+  */
+  return (isAtom(x) || isNull(x) || isNull(cdr(x))) ? false : isNull(cdr(cdr(x)));
+}
+
+var first = function(l) {
+  return car(l);
+}
+
+var second = function(l) {
+  return car(cdr(l));
+}
+
+var third = function(l) {
+  return car(cdr(cdr(l)));
+}
+
+var build = function(s1, s2) {
+  return cons(s1, cons(s2, []));
+}
+
+//This doesn't work quite right...
+var isFun = function(rel) {
+  return isSet(first(rel));
+}
+
+var x = [2, 3, 4, "apple", 5];
+var y = [3, 4, 5, 7, "apple"];
+
+//print(build(x, y));
