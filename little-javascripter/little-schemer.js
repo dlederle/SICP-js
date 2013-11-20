@@ -341,38 +341,122 @@ var occur = function(a, lat) {
 
 //Chapter 5
 
-//DOES NOT WORK
 var remberstar = function(a, l) {
   if(isNull(l)) {
     return [];
-  } 
+  }
   if(isAtom(car(l))) {
     if(isEq(car(l), a)) {
-      remberstar(a, cdr(l));
+      return remberstar(a, cdr(l));
     } else {
-      cons(car(l), remberstar(a, cdr(l)));
+      return cons(car(l), remberstar(a, cdr(l)));
     }
   } else {
-    cons(remberstar(a, car(l)), remberstar(a, cdr(l)));
+    return cons(remberstar(a, car(l)), remberstar(a, cdr(l)));
   }
 }
-print(remberstar("cup", [["coffee"], "cup", [["tea"], "cup"], ["and", ["hick"]], "cup"]));
 
-function insertRStar(n, old, l) {
-
+var insertRStar = function (n, old, l) {
+  if(isNull(l)) {
+    return [];
+  }
+  if(isAtom(car(l))) {
+    if(isEq(car(l), old)) {
+      return cons(old, cons(n, insertRStar(n, old, cdr(l))));
+    } else {
+      return cons(car(l), insertRStar(n, old, cdr(l)));
+    }
+  } else {
+    return cons(insertRStar(n, old, car(l)), insertRStar(n, old, cdr(l)));
+  }
 }
+//var l = [["how", "much", ["wood"]], "could", [["a", ["wood"], "chuck",]], [[["chuck"]]], ["if", ["a"], [["wood", "chuck"]]], "could", "chuck", "wood"];
+//print(insertRStar("roast", "chuck", l));
+
+var occurStar = function(a, l) {
+  if(isNull(l)) { return 0; }
+  if(isAtom(car(l))) {
+    if(isEq(car(l), a)) {
+      return add1(occurStar(a, cdr(l)));
+    } else {
+      return occurStar(a, cdr(l));
+    }
+  } else {
+    return occurStar(a, car(l)) + occurStar(a, cdr(l));
+  }
+}
+//var l = [["banana"], ["split", "ban", "ana", [["banana"]], ["banana", "ice"]], "banana"];
+//print(occurStar("banana", l));
+
+var substStar = function(n, old, l) {
+  if(isNull(l)) { return []; }
+  if(isAtom(car(l))) {
+    if(isEq(car(l), old)) {
+      return cons(n, substStar(n, old, cdr(l)));
+    } else {
+      return cons(car(l), substStar(n, old, cdr(l)));
+    }
+  } else {
+    return cons(substStar(n, old, car(l)), substStar(n, old, cdr(l)));
+  }
+}
+//print(substStar("orange", "banana", l));
+
+var insertLStar = function (n, old, l) {
+  if(isNull(l)) {
+    return [];
+  }
+  if(isAtom(car(l))) {
+    if(isEq(car(l), old)) {
+      return cons(n, cons(old, insertLStar(n, old, cdr(l))));
+    } else {
+      return cons(car(l), insertLStar(n, old, cdr(l)));
+    }
+  } else {
+    return cons(insertLStar(n, old, car(l)), insertLStar(n, old, cdr(l)));
+  }
+}
+//print(insertLStar("pecker", "chuck", l));
+
+var memberStar = function (a, l) {
+  if(isNull(l)) { return false; }
+  if(isAtom(car(l))) {
+    if(isEq(car(l), a) || memberStar(a, cdr(l))) {
+      return true;
+    }
+  } else {
+      return memberStar(a, car(l)) || memberStar(a, cdr(l));
+  }
+}
+//var l = [["potato"], ["chips", [["with"], "fish"], ["chips"]]];
+//print(memberStar("chips", l));
+
+var leftmost = function(l) {
+  if(isNull(car(l))) { return undefined; }
+  if(isAtom(car(l))) {
+    return car(l);
+  } else {
+    return leftmost(car(l));
+  }
+}
+//var l = [[], [["hot"]], "tuna", ["and"], "cheese"];
+//print(leftmost(l));
+
+//Chapter 6
 
 //Chapter 7
 
 var isSet = function(lat) {
   if(isNull(lat)) {
-    return true;  
+    return true;
   } else if(isMember(car(lat), cdr(lat))) {
     return false;
   } else {
     return isSet(cdr(lat));
   }
 }
+//var l = ["apples", "peaches", "pears", "plums"];
+//print(isSet(l));
 
 var makeset = function(lat) {
   /*
@@ -386,6 +470,8 @@ var makeset = function(lat) {
   */
   return isNull(lat) ? [] : cons(car(lat), makeset(multirember(car(lat), cdr(lat))));
 }
+//var l = ["apples", "peaches", "pears", "plums"];
+//print(makeset(l));
 
 var isSubset = function(s1, s2) {
   /*
@@ -475,12 +561,231 @@ var build = function(s1, s2) {
   return cons(s1, cons(s2, []));
 }
 
-//This doesn't work quite right...
 var isFun = function(rel) {
-  return isSet(first(rel));
+  return isSet(firsts(rel));
 }
 
-var x = [2, 3, 4, "apple", 5];
-var y = [3, 4, 5, 7, "apple"];
+var revrel = function(rel) {
+  if(isNull(rel)) { return []; }
+  else {
+    return cons(build(second(car(rel)), first(car(rel))), revrel(cdr(rel)));
+  }
+}
+//var l = [["a", "b"], ["b", "c"], ["c", "d"]];
+//print(revrel(l));
 
-//print(build(x, y));
+var revpair = function(pair) {
+  return build(second(pair), first(pair));
+}
+//var pair = ["a", "b"];
+//print(revpair(pair));
+
+var newrevrel = function(rel) {
+  if(isNull(rel)) { return []; }
+  else {
+    return cons(revpair(car(rel)), revrel(cdr(rel)));
+  }
+}
+//print(newrevrel(l));
+
+var isOnetoOne = function(fun) {
+  return isFun(revrel(fun));
+}
+//var fun = [["grape", "raisin"], ["plum", "prune"], ["stewed", "grape"]];
+//print(isOnetoOne(fun));
+
+//Chapter 8
+
+var remberF = function(test, a, l) {
+  if(isNull(l)) { return []; }
+  if(test(car(l), a)) {
+    return remberF(test, a, cdr(l));
+  } else {
+    return cons(car(l), remberF(test, a, cdr(l)));
+  }
+}
+//var l = ["a", "b", "c", ["a"], "a", "b"];
+//print(remberF(isEq, "a", l));
+
+var isEq_c = function(a) {
+  return function(x) {
+    return isEq(a, x);
+  }
+}
+//print(isEq_c("a")("b"));
+
+var rember_f = function(test) {
+  return function(a, l) {
+    if(isNull(l)) { return []; }
+    if(test(car(l), a)) {
+      return rember_f(test)(a, cdr(l));
+    } else {
+      return cons(car(l), rember_f(test)(a, cdr(l)));
+    }
+  }
+}
+//var l = ["a", "b", "c", ["a"], "a", "b"];
+//print(rember_f(isEq)("a", l));
+
+var insertL_f = function(test) {
+  return function(n, old, l) {
+    if(isNull(l)) { return []; }
+    if(test(car(l), old)) {
+      return cons(n, cons(old, cdr(l)));
+    } else {
+      return cons(car(l), insertL_f(test)(n, old, cdr(l)));
+    }
+  }
+}
+//var l = ["a", "b", "c", ["a"], "a", "b"];
+//print(insertL_f(isEq)("x", "a", l));
+
+var seqL = function(n, old, l) {
+  return cons(n, (cons(old, l)));
+}
+
+var seqR = function(n, old, l) {
+  return cons(old, (cons(n, l)));
+}
+
+var insertG = function(seq) {
+  return function(n, old, l) {
+    if(isNull(l)) { return []; }
+    if(isEq(car(l), old)) {
+      return seq(n, old, cdr(l))
+    } else {
+      return cons(car(l), insertG(seq)(n, old, cdr(l)));
+    }
+  }
+}
+//print(insertG(seqR)("x", "b", l));
+
+//This function is supposed to take an operator as an atom and return it as a function
+//However, javascript doesn't like passing operators around, and I don't have them aliased as functions
+var atom_to_function = function(x) { }
+
+var multirember_f = function(test) {
+  return function(a, l) {
+    if(isNull(l)) { return []; }
+    if(test(a, car(l))) {
+      return multirember_f(test)(a, cdr(l));
+    } else {
+      return cons(car(l), multirember_f(test)(a, cdr(l)));
+    }
+  }
+}
+//var l = ["a", "b", "c", ["a"], "a", "b"];
+//print(multirember_f(isEq)("a", l));
+
+var eq_tuna = isEq_c("tuna");
+var multirember_t = function(test, l) {
+  if(isNull(l)) { return []; }
+  if(test(car(l))) {
+    return multirember_t(test, cdr(l));
+  } else {
+    return cons(car(l), multirember_t(test, cdr(l)));
+  }
+}
+//var l = ["shrimp", "salad", "tuna", "salad", "and", "tuna"];
+//print(multirember_t(eq_tuna, l));
+
+var a_friend = function(x, y) { return isNull(y); }
+
+var new_friend = function(newl, seen) {
+  return a_friend(newl, cons(car(l), seen));
+}
+
+var last_friend = function(x, y) { return x.length; }
+
+var multirember_co = function(a, l, col) {
+  if(isNull(l)) { return col([], []); }
+  if(isEq(car(l), a)) {
+    return multirember_co(a, cdr(l), function(newl, seen) {
+      return col(newl, cons(car(l), seen));
+    });
+  } else {
+    return multirember_co(a, cdr(l), function(newl, seen) {
+      return col(cons(car(l), newl), seen);
+    });
+  }
+}
+//print(multirember_co("tuna", ["Strawberries", "swordfish", "and", "tuna"], last_friend));
+
+var isEven = function(n) {
+  return n % 2 === 0;
+}
+
+var evens_only_star = function(l) {
+  if(isNull(l)) { return []; }
+  if(isAtom(car(l))) {
+    if(isEven(car(l))) {
+      return cons(car(l), evens_only_star(cdr(l)));
+    } else {
+      return evens_only_star(cdr(l));
+    }
+  } else {
+    return cons(evens_only_star(car(l)), evens_only_star(cdr(l)));
+  }
+}
+//print(evens_only_star([[1, 2], 3, 4, 5, 6, 7, 8, 9, 10]));
+
+var evens_only_star_co = function(l, col) {
+  if(isNull(l)) { return col([], 1, 0); }
+  if(isAtom(car(l))) {
+    if(isEven(car(l))) {
+      return evens_only_star_co(cdr(l), function(newl, p, s) {
+        return col(cons(car(l), newl), car(l) * p, s);
+      });
+    } else {
+      return evens_only_star_co(cdr(l), function(newl, p, s) {
+        return col(cons(car(l), newl), p, car(l) + s );
+      });
+    }
+  } else {
+    return evens_only_star_co(car(l), col);
+  }
+}
+//var l = [[9, 1, 2, 8], 3, 10, [[9, 9], 7, 6], 2];
+//var col = function(newl, product, sum) {
+  //return cons(sum, cons(product, newl));
+//}
+//print(evens_only_star_co(l, col));
+//Wow, that is some gnarly code. It also doesn't quite return the correct result.
+
+//Chapter 9
+
+var keep_looking = function(a, i, lat) {
+  if(isNumber(i)) {
+    return keep_looking(a, lat[i], lat);
+  } else {
+    return isEq(a, i);
+  }
+}
+
+var looking = function(a, lat) {
+  return keep_looking(a, pick(1, lat), lat);
+}
+//var l = [1, 2, 6, 4, 5, "a", 3];
+//print(looking("a", l));
+
+var shift = function(pair) {
+  return build(first(first(pair)), build(second(first(pair)), second(pair)));
+}
+//print(shift([["a", "b"], ["c", "d"]]));
+
+//Chapter 10
+
+var lookup_in_entry_help = function(name, names, values, entry_f) {
+  if(isNull(names)) { return entry_f(name); }
+  if(isEq(car(names), name)) {
+    return car(values);
+  } else {
+    return lookup_in_entry_help(name, cdr(names), cdr(values), entry_f);
+  }
+}
+
+var lookup_in_entry = function(name, entry, entry_f) {
+  return lookup_in_entry_help(name, first(entry), second(entry), entry_f);
+}
+
+//print(lookup_in_entry("entree", [["app", "entree", "bev"], ["food", "tastes", "good"]], function(n) { return n; }));
